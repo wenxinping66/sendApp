@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NGCC</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<div class="header clearfix">
+    <div class="logo"><img src="./images/logo.png" alt="logo"></div>
+    <div class="title-box">
+        <h2 class="title-second">ISPRS TECHNICAL COMMISSION Ⅲ SYMPOSIUM ON</h2>
+        <h1 class="title-main">REMOTE SENSING</h1>
+        <div class="title-time">May 7-10,2017</div>
+        <div class="title-in">Beijing,China</div>
+    </div>
+</div>
+<div class="content clearfix">
+    <div class="navigator">
+        <ul class="nav-ul">
+            <li class="nav-list">
+                <a href="javascript:;" class="to-page" title="SYMPOSIUM TOPIC AND THEMES">SYMPOSIUM TOPIC AND THEMES</a>
+            </li>
+            <li class="nav-list">
+                <a href="javascript:;" class="to-page" title="PUBLICATION AND PAPER SUBMISSION">PUBLICATION AND PAPER SUBMISSION</a>
+            </li>
+            <li class="nav-list">
+                <a href="javascript:;" class="to-page" title="SCIENTIFIC COMMITTEE">SCIENTIFIC COMMITTEE </a>
+            </li>
+            <li class="nav-list">
+                <a href="javascript:;" class="to-page" title="SYMPOSIUM TOPIC AND THEMES">SYMPOSIUM TOPIC AND THEMES</a>
+            </li>
+        </ul>
+    </div>
+    <div class="content-info">
+        <div class="show-iframe">
+            <iframe id="mainFrame" name="mainFrame" src="./page/SYMPOSIUM TOPIC AND THEMES.html" frameborder="0" scrolling="no" onload="iFrameHeight()"></iframe>
+        </div>
+    </div>
+</div>
+<script>
+    function iFrameHeight() {
+        var ifm= document.getElementById("mainFrame");
+        var subWeb = document.frames ? document.frames["mainFrame"].document : ifm.contentDocument;
+        if(ifm != null && subWeb != null) {
+            ifm.height = subWeb.body.scrollHeight;
+        }
+    }
+</script>
+<script src="./bower_components/jquery/dist/jquery.js"></script>
+<script>
+    $('.to-page').on('click',function() {
+        var ifm= document.getElementById("mainFrame");
+        ifm.height = 'auto';
+        var src = './page/'+$(this).attr('title')+'.html';
+       $('#mainFrame').attr('src',src);
+    });
+</script>
+</body>
+</html>

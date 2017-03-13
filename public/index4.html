@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NGCC</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<div class="header clearfix">
+    <div class="logo"><img src="./images/logo.png" alt="logo"></div>
+    <div class="title-box">
+        <h2 class="title-second">ISPRS TECHNICAL COMMISSION Ⅲ SYMPOSIUM ON</h2>
+        <h1 class="title-main">REMOTE SENSING</h1>
+        <div class="title-time">May 7-10,2017</div>
+        <div class="title-in">Beijing,China</div>
+    </div>
+</div>
+<div class="content clearfix">
+    <div class="navigator">
+        <ul class="nav-ul" id="nav_ul">
+
+        </ul>
+    </div>
+    <div class="content-info">
+        <div class="show-content">
+
+        </div>
+    </div>
+</div>
+
+<script src="./bower_components/jquery/dist/jquery.js"></script>
+<script>
+
+    $.ajax({
+        url: '/allArticle',
+        type: 'get',
+        data: {},
+        success: function(data) {
+            var artnames = data.artnames;
+            var allli = '';
+            for(var i=0; i<artnames.length; i++ ) {
+                allli += '<li class="nav-list"> <a href="javascript:;" class="to-page" title="'+ artnames[i].artname +'">'+ artnames[i].artname +'</a></li>';
+            }
+            $('#nav_ul').html(allli);
+            $('.to-page').eq(0).trigger('click');
+        }
+    })
+    $('#nav_ul').on('click', '.to-page',function() {
+        var artname = $(this).text();
+        $.ajax({
+            url: '/getArt',
+            type: 'POST',
+            data: {
+                artname :artname
+            },
+            success: function(data) {
+                $('.show-content').html(data.artbody);
+            }
+        })
+    })
+</script>
+</body>
+</html>

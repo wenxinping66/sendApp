@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NGCC</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<div class="header clearfix">
+    <div class="logo"><img src="./images/logo.png" alt="logo"></div>
+    <div class="title-box">
+        <h2 class="title-second">ISPRS TECHNICAL COMMISSION Ⅲ SYMPOSIUM ON</h2>
+        <h1 class="title-main">REMOTE SENSING</h1>
+        <div class="title-time">May 7-10,2017</div>
+        <div class="title-in">Beijing,China</div>
+    </div>
+</div>
+<div class="content clearfix">
+    <div class="navigator">
+        <ul class="nav-ul" id="nav_ul">
+
+        </ul>
+    </div>
+    <div class="content-info">
+        <div class="show-iframe">
+            <iframe id="mainFrame" name="mainFrame" src="" frameborder="0" scrolling="no" onload="iFrameHeight()"></iframe>
+        </div>
+    </div>
+</div>
+
+<script src="./bower_components/jquery/dist/jquery.js"></script>
+<script>
+
+    function iFrameHeight() {
+        var ifm= document.getElementById("mainFrame");
+        var subWeb = document.frames ? document.frames["mainFrame"].document : ifm.contentDocument;
+        if(ifm != null && subWeb != null) {
+            ifm.height = subWeb.body.scrollHeight;
+        }
+    }
+    $.ajax({
+        url: '/allArticle',
+        type: 'get',
+        data: {},
+        success: function(data) {
+            var artnames = data.artnames;
+            var allli = '';
+            for(var i=0; i<artnames.length; i++ ) {
+                allli += '<li class="nav-list"> <a href="javascript:;" class="to-page" title="'+ artnames[i].artname +'">'+ artnames[i].artname +'</a></li>';
+            }
+            $('#nav_ul').html(allli);
+            $('.to-page').eq(0).trigger('click');
+        }
+    })
+    $('#nav_ul').on('click', '.to-page',function() {
+        var ifm= document.getElementById("mainFrame");
+        ifm.height = 'auto';
+        var src = '/page/'+$(this).attr('title');
+        $('#mainFrame').attr('src',src);
+    });
+</script>
+</body>
+</html>

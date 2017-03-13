@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>NGCC</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <script type="text/javascript" charset="utf-8" src="/ueditor/ueditor.config.js"></script>
+    <script type="text/javascript" charset="utf-8" src="/ueditor/ueditor.all.min.js"> </script>
+    <!--建议手动加在语言，避免在ie下有时因为加载语言失败导致编辑器加载失败-->
+    <!--这里加载的语言文件会覆盖你在配置项目里添加的语言类型，比如你在配置项目里配置的是英文，这里加载的中文，那最后就是中文-->
+    <script type="text/javascript" charset="utf-8" src="/ueditor/lang/zh-cn/zh-cn.js"></script>
+    <style type="text/css">
+        div{
+            width:100%;
+        }
+    </style>
+    <style>
+        form {
+            margin: 0;
+        }
+        textarea {
+            display: block;
+        }
+        .art-a {
+            text-decoration: none;
+        }
+        .art-delete,.art-see {
+            font-size: 12px;
+        }
+        .art-see {
+            color: #666;
+        }
+        .art-delete {
+            color: red
+        }
+        #title {
+            width: 400px;
+            line-height: 34px;
+            padding: 0 10px;
+            font-weight: bold;
+        }
+        .art-wrap {
+            width: 900px;
+            margin: 0 auto;
+        }
+        #btns {
+            padding: 10px 4px;
+        }
+        #btns button {
+            padding: 3px 10px;
+        }
+    </style>
+
+</head>
+<body style="background: #f5f5f5">
+<div class="art-wrap">
+    <div>
+        <div>所有文章</div>
+        <table>
+            <tbody id="art-table">
+            </tbody>
+        </table>
+        <h3>编辑</h3>
+        <div>标题：<input id="title" type="text" placeholder="输入标题"></div>
+        <br>
+        <script id="editor" type="text/plain" style="width:800px;height:500px;"></script>
+    </div>
+    <div id="btns">
+        <div>
+            <button id="save">保存</button>
+            <!-- <button onclick="getAllHtml()">获得整个html的内容</button>
+             <button onclick="getContent()">获得内容</button>-->
+            <button onclick="insertHtml()">插入给定的内容</button>
+            <button onclick="setContent()">清除内容</button>
+        </div>
+    </div>
+</div>
+
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+<script type="text/javascript">
+    var ue = UE.getEditor('editor');
+    $.ajax({
+        url: '/allArticle',
+        type: 'get',
+        data: {},
+        success: function(data) {
+            var artnames = data.artnames;
+            var alla = '';
+            for(var i=0; i<artnames.length; i++ ) {
+                alla += '<tr><td><a href="javascript:;" class="art-a"><span class="art-item">'+artnames[i].artname+'</span></a></td><td><a target="_blank" href="/index.html?artname='+ encodeURI(artnames[i].artname) +'" data-art="'+artnames[i].artname+'" class="art-see">查看</a></td><td><a href="javascript:;" data-art="'+artnames[i].artname+'" class="art-delete">删除</a></td></tr>';
+            }
+            $('#art-table').html(alla)
+        }
+    })
+    $('#save').on('click',function() {
+        var html = ue.getContent();
+        var artAllHtml = ue.getAllHtml();
+        var title = $('#title').val().trim();
+        $.ajax({
+            url: '/save',
+            type: 'POST',
+            data: {
+                title: title,
+                html: html,
+                artAllHtml: artAllHtml
+            },
+            success: function(data) {
+                if(data.success) {
+                    if(data.state == 2) {  //更新
+                        var newtr = $('<tr><td><a href="javascript:;" class="art-a"><span class="art-item">'+title+'</span></a></td><td><a href="javascript:;" data-art="'+title+'" class="art-delete">删除</a></td></tr>');
+                        $('#art-table').append(newtr);
+                    }
+                    alert('保存成功')
+                }else{
+                    alert(data.res)
+                }
+
+            }
+        })
+    })
+    //点击查看
+    $('#art-table').on('click', '.art-a', function() {
+        var artname = $(this).find('.art-item').text()
+        $('#title').val(artname);
+        $.ajax({
+            url: '/getArt',
+            type: 'POST',
+            data: {
+                artname :artname
+            },
+            success: function(data) {
+                ue.setContent(data.artbody);
+            }
+        })
+    })
+    //				删除
+    $('#art-table').on('click', '.art-delete', function() {
+        var flag = confirm('你确定要删除');
+        if(!flag) {
+            return;
+        }
+        var $that = $(this);
+        var artname = $(this).attr('data-art');
+        $('#title').val(artname);
+        $.ajax({
+            url: '/delArt',
+            type: 'POST',
+            data: {
+                artname :artname
+            },
+            success: function(data) {
+                if(data.success) {
+                    $that.parents('tr').remove();
+                }
+            }
+        })
+    })
+
+
+    //实例化编辑器
+    //建议使用工厂方法getEditor创建和引用编辑器实例，如果在某个闭包下引用该编辑器，直接调用UE.getEditor('editor')就能拿到相关的实例
+
+    function setblur(e){
+        UE.getEditor('editor').blur();
+        UE.dom.domUtils.preventDefault(e)
+    }
+    function insertHtml() {
+        var value = prompt('插入html代码', '');
+        UE.getEditor('editor').execCommand('insertHtml', value)
+    }
+
+    function getAllHtml() {
+        return UE.getEditor('editor').getAllHtml();
+    }
+    function getContent() {
+        return UE.getEditor('editor').getContent();
+    }
+    function setContent(isAppendTo) {
+        UE.getEditor('editor').setContent('', isAppendTo);
+    }
+
+</script>
+</body>
+</html>

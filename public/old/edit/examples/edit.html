@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>NGCC</title>
+		<style>
+			form {
+				margin: 0;
+			}
+			textarea {
+				display: block;
+			}
+			.art-a {
+				text-decoration: none;
+			}
+			.art-delete {
+				font-size: 12px;
+			}
+			#title {
+				width: 400px;
+				line-height: 34px;
+				padding: 0 10px;
+				font-weight: bold;
+			}
+		</style>
+		<link rel="stylesheet" href="../themes/default/default.css" />
+		<script charset="utf-8" src="../kindeditor-min.js"></script>
+		<script charset="utf-8" src="../lang/zh_CN.js"></script>
+		<script src="./jquery.js"></script>
+		<script>
+			var editor;
+			KindEditor.ready(function(K) {
+				editor = K.create('textarea[name="content"]', {
+					allowFileManager : true
+				});
+				//保存
+				K('input[name=getHtml]').click(function(e) {
+					var html = editor.html();
+					var title = $('#title').val().trim();
+					$.ajax({
+						url: '/save',
+						type: 'POST',
+						data: {
+							title: title,
+							html: html
+						},
+						success: function(data) {
+							if(data.success) {
+								if(data.state == 2) {  //更新
+									var newtr = $('<tr><td><a href="javascript:;" class="art-a"><span class="art-item">'+title+'</span></a></td><td><a href="javascript:;" data-art="'+title+'" class="art-delete">删除</a></td></tr>');
+									$('#art-table').append(newtr);
+								}
+
+								alert('保存成功')
+							}
+
+						}
+					})
+
+				});
+				K('input[name=clear]').click(function(e) {
+					editor.html('');
+				});
+				//点击查看
+				$('#art-table').on('click', '.art-a', function() {
+					var artname = $(this).find('.art-item').text()
+					$('#title').val(artname);
+					$.ajax({
+						url: '/getArt',
+						type: 'POST',
+						data: {
+							artname :artname
+						},
+						success: function(data) {
+							editor.html(data.artbody);
+						}
+					})
+				})
+//				删除
+				$('#art-table').on('click', '.art-delete', function() {
+					var flag = confirm('你确定要删除');
+					if(!flag) {
+						return;
+					}
+					var $that = $(this);
+					var artname = $(this).attr('data-art');
+					$('#title').val(artname);
+					$.ajax({
+						url: '/delArt',
+						type: 'POST',
+						data: {
+							artname :artname
+						},
+						success: function(data) {
+							if(data.success) {
+								$that.parents('tr').remove();
+							}
+						}
+					})
+				})
+			});
+			$.ajax({
+				url: '/allArticle',
+				type: 'get',
+				data: {},
+				success: function(data) {
+					var artnames = data.artnames;
+					var alla = '';
+					for(var i=0; i<artnames.length; i++ ) {
+						alla += '<tr><td><a href="javascript:;" class="art-a"><span class="art-item">'+artnames[i].artname+'</span></a></td><td><a href="javascript:;" data-art="'+artnames[i].artname+'" class="art-delete">删除</a></td></tr>';
+					}
+					$('#art-table').html(alla)
+				}
+			})
+
+
+
+		</script>
+	</head>
+	<body>
+		<div>所有文章</div>
+		<table>
+			<tbody id="art-table">
+			</tbody>
+		</table>
+		<h3>编辑</h3>
+		<div>标题：<input id="title" type="text" placeholder="输入标题"></div>
+		<br>
+		<form>
+			<textarea name="content" style="width:800px;height:400px;visibility:hidden;"></textarea>
+			<p>
+				<input type="button" name="getHtml" value="保存" />
+				<input type="button" name="clear" value="清空内容" />
+			</p>
+		</form>
+	</body>
+	<script>
+
+	</script>
+</html>
